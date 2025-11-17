@@ -34,4 +34,4 @@ out/
 # Temp
 *.tmp
 *.temp
-data/
+/data/
