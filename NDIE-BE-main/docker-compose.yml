@@ -1,0 +1,79 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: ndie-be-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-ndie}
+      MARIADB_USER: ${DB_USER:-ndie}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-ndiepass}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-ndieroot}
+    ports:
+      - "${DB_LOCAL_PORT:-3307}:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: ndie-be-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "20", "1", "--loglevel", "warning"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ndie-be-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mariadb://db:3306/${DB_NAME:-ndie}?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8"
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-ndie}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ndiepass}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${SPRING_DATA_REDIS_PASSWORD:-}
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY:-}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY:-}
+      AWS_S3_REGION: ${AWS_S3_REGION:-ap-northeast-2}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-ndie-backend-bucket}
+      SPRING_JWT_SECRET: ${SPRING_JWT_SECRET:-changeme}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-smtp.gmail.com}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-example@gmail.com}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-example-password}
+      NDIE_MAIL_DISABLE_SEND: ${NDIE_MAIL_DISABLE_SEND:-true}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID:-dummy-kakao-client-id}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET:-dummy-kakao-client-secret}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:-http://localhost:8080/login/oauth2/code/kakao}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  db-data:
+  redis-data:

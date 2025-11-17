@@ -1,0 +1,14 @@
+@keyframes modalFadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-enter {
+    animation: modalFadeInUp 0.4s ease forwards;
+}

@@ -1,0 +1,19 @@
+2025-06-02 14:02:43 - [0;36m컴퓨터 등록을 시작합니다...[0m
+2025-06-02 14:02:43 - [1;33m데이터 디렉토리가 생성되었습니다: /Users/NDIE/data[0m
+2025-06-02 14:02:43 - [0;36m컴퓨터 정보 수집 중...[0m
+2025-06-02 14:02:44 - [0;32m수집된 정보:[0m
+2025-06-02 14:02:44 - 모델: MacBookAir10,1
+2025-06-02 14:02:44 - 시리얼 번호: FVFJX2PP1WFV
+2025-06-02 14:02:44 - OS 버전: 14.4
+2025-06-02 14:02:44 - 호스트명: 허동운의 MacBook Air
+2025-06-02 14:02:44 - 사용자: heodongun (허동운)
+2025-06-02 14:02:44 - IP 주소: 10.129.57.46
+2025-06-02 14:02:44 - MAC 주소: 70:ae:d5:36:09:ae
+2025-06-02 14:02:44 - CPU: Apple M1
+2025-06-02 14:02:44 - 메모리: 8 GB
+2025-06-02 14:02:44 - 디스크: 228Gi
+2025-06-02 14:02:44 - [0;36m서버로 데이터 전송 중...[0m
+2025-06-02 14:02:44 - [0;32m서버 전송 성공[0m
+2025-06-02 14:02:44 - 응답: {"id":52,"name":"노트북 컴퓨터","manufacturer":"Apple","model_name":"MacBookAir10,1","equipment_type":"LAPTOP","equipment_type_display":"노트북","serial_number":"FVFJX2PP1WFV","mac_addresses":[{"id":105,"mac_address":"70:ae:d5:36:09:ae","interface_type":"ETHERNET","interface_type_display":"이더넷","is_primary":false}],"description":"[시스템 정보] 제조사: Apple 모델: MacBookAir10,1 시리얼번호: FVFJX2PP1WFV 운영체제: macOS 14.4 프로세서: Apple M1 메모리: 8 GB 디스크: 228Gi [네트워크 정보] 이름: en0 MAC: 70:ae:d5:36:09:ae (ETHERNET) IP: 10.129.57.46","status":"RENTED","status_display":"대여 중","acquisition_date":"2025-06-02","manufacture_year":null,"purchase_date":null,"created_at":"2025-06-02T14:02:44.414664+09:00","updated_at":"2025-06-02T14:02:44.422528+09:00","rental":{"user":{"id":197,"username":"24.059","email":"24.059@bssm.hs.kr","first_name":"","last_name":"허동운","is_staff":false,"name":"허동운"}},"rental_info":{"id":55,"user":{"id":197,"username":"24.059","email":"24.059@bssm.hs.kr","first_name":"","last_name":"허동운","is_staff":false,"name":"허동운"},"equipment":{"id":52,"name":"노트북 컴퓨터","manufacturer":"Apple","model_name":"MacBookAir10,1","equipment_type":"LAPTOP","equipment_type_display":"노트북","serial_number":"FVFJX2PP1WFV","mac_addresses":[{"id":105,"mac_address":"70:ae:d5:36:09:ae","interface_type":"ETHERNET","interface_type_display":"이더넷","is_primary":false}],"description":"[시스템 정보] 제조사: Apple 모델: MacBookAir10,1 시리얼번호: FVFJX2PP1WFV 운영체제: macOS 14.4 프로세서: Apple M1 메모리: 8 GB 디스크: 228Gi [네트워크 정보] 이름: en0 MAC: 70:ae:d5:36:09:ae (ETHERNET) IP: 10.129.57.46","status":"RENTED","status_display":"대여 중","acquisition_date":"2025-06-02","manufacture_year":null,"purchase_date":null,"created_at":"2025-06-02T14:02:44.414664+09:00","updated_at":"2025-06-02T14:02:44.422528+09:00","rental":{"user":{"id":197,"username":"24.059","email":"24.059@bssm.hs.kr","first_name":"","last_name":"허동운","is_staff":false,"name":"허동운"}}},"rental_date":"2025-06-02T14:02:44.426338+09:00","due_date":"2025-07-02T14:02:44.426341+09:00","return_date":null,"status":"RENTED","status_display":"대여 중","notes":"장비 등록 시 자동 생성된 대여 정보","approved_by":{"id":197,"username":"24.059","email":"24.059@bssm.hs.kr","first_name":"","last_name":"허동운","is_staff":false,"name":"허동운"},"returned_to":null,"created_at":"2025-06-02T14:02:44.426670+09:00","updated_at":"2025-06-02T14:02:44.426683+09:00"}}
+2025-06-02 14:02:44 - [0;32m컴퓨터 정보가 성공적으로 저장되었습니다: /Users/NDIE/data/computer_info.csv[0m
+2025-06-02 14:02:44 - [0;32m컴퓨터 등록이 완료되었습니다.[0m

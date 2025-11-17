@@ -1,0 +1,143 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: ndie-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-ndie}
+      MARIADB_USER: ${DB_USER:-ndie}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-ndiepass}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-ndieroot}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: ndie-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "20", "1", "--loglevel", "warning"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./NDIE-BE-main
+      dockerfile: Dockerfile
+    container_name: ndie-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Database
+      SPRING_DATASOURCE_URL: "jdbc:mariadb://db:3306/${DB_NAME:-ndie}?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8"
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-ndie}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ndiepass}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # AWS S3
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION:-ap-northeast-2}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-ndie-backend-bucket}
+      # JWT
+      SPRING_JWT_SECRET: ${SPRING_JWT_SECRET}
+      # Email
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-smtp.gmail.com}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      NDIE_MAIL_DISABLE_SEND: ${NDIE_MAIL_DISABLE_SEND:-false}
+      # OAuth2 Kakao
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:-http://localhost:8080/login/oauth2/code/kakao}
+      # Monitoring
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./NDIE-FE-main
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8080}
+        NEXT_PUBLIC_KAKAO_BASE: ${NEXT_PUBLIC_KAKAO_BASE:-http://localhost:8080/oauth2/authorization/kakao}
+        NEXT_PUBLIC_BROWSER_API_BASE: ${NEXT_PUBLIC_BROWSER_API_BASE:-http://localhost:8080}
+        NEXT_INTERNAL_API_BASE: ${NEXT_INTERNAL_API_BASE:-http://backend:8080}
+    container_name: ndie-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8080}
+      NEXT_PUBLIC_KAKAO_BASE: ${NEXT_PUBLIC_KAKAO_BASE:-http://localhost:8080/oauth2/authorization/kakao}
+      NEXT_PUBLIC_BROWSER_API_BASE: ${NEXT_PUBLIC_BROWSER_API_BASE:-http://localhost:8080}
+      NEXT_INTERNAL_API_BASE: ${NEXT_INTERNAL_API_BASE:-http://backend:8080}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+    ports:
+      - "3000:3000"
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: ndie-prometheus
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: ndie-grafana
+    restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_started
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+
+volumes:
+  db-data:
+  redis-data:
+  prometheus-data:
+  grafana-storage:
