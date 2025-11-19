@@ -6,15 +6,19 @@ import jakarta.servlet.ServletException
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
 import org.springframework.stereotype.Component
+import org.springframework.web.util.UriComponentsBuilder
 import java.io.IOException
 
 @Component
 class CustomSuccessHandler(
     private val jwtUtil: JWTUtil,
-    private val codeRequestService: CodeRequestService
+    private val codeRequestService: CodeRequestService,
+    @Value("\${ndie.frontend.login-success-url}")
+    private val loginSuccessUrl: String
 ) : SimpleUrlAuthenticationSuccessHandler() {
 
     @Throws(IOException::class, ServletException::class)
@@ -28,7 +32,12 @@ class CustomSuccessHandler(
         val customUserDetails = authentication.principal as CustomOAuth2User
         val userId:Int=customUserDetails.getId().toString().toInt()
         val code:String=codeRequestService.request(userId)
-        response.sendRedirect("https://ndie-fe-985895714915.asia-northeast1.run.app/login/success?code=$code")
+        val redirectUrl = UriComponentsBuilder
+            .fromHttpUrl(loginSuccessUrl)
+            .queryParam("code", code)
+            .build()
+            .toUriString()
+        response.sendRedirect(redirectUrl)
     }
 
     private fun createCookie(key: String, value: String): Cookie {
