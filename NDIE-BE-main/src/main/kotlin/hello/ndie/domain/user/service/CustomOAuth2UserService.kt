@@ -35,22 +35,22 @@ class CustomOAuth2UserService(
         println("Existing User: $existData")
 
         return if (existData == null) {
-            val user = User(
-                username = username,
-                name = oAuth2Response?.getName().toString(),
-                email = oAuth2Response?.getEmail().toString(),
-                role = "ROLE_USER",
-                password = ""
+            val savedUser = userRepository.save(
+                User(
+                    username = username,
+                    name = oAuth2Response?.getName().toString(),
+                    email = oAuth2Response?.getEmail().toString(),
+                    role = "ROLE_USER",
+                    password = ""
+                )
             )
 
-            userRepository.save(user)
-
             val userDTO = UserDto(
-                username = username,
-                name = oAuth2Response?.getName().toString(),
-                email = oAuth2Response?.getEmail().toString(),
-                role = "ROLE_USER",
-                id = oAuth2Response?.getId()
+                username = savedUser.username,
+                name = savedUser.name,
+                email = savedUser.email,
+                role = savedUser.role,
+                id = savedUser.id
             )
 
             CustomOAuth2User(userDTO)
