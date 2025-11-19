@@ -83,6 +83,8 @@ services:
       start_period: 60s
 
   frontend:
+    profiles:
+      - frontend
     build:
       context: ./NDIE-FE-main
       dockerfile: Dockerfile
